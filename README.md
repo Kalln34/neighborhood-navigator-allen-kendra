@@ -1,1 +1,4 @@
 # neighborhood-navigator-allen-kendra
+
+Project name: Neighborhood Navigator
+About: My project addresses the challenge of finding reliable, up-to-date information when moving to a new area. Neighborhood Navigator would serve as a centralized hub for this information, helping individuals become better informed about their new community. Designed to support moving preparedness, the platform would also continue to function as an ongoing reference for local resources and community information. This application is for families or individuals relocating due to work, students moving due to college, or for those who need to move due to life changes. Information that will be available includes healthcare services and hospitals, environmental and weather information, educational institutions, safety reports, transportation options, lifestyle amenities, and communtiy resources.  
