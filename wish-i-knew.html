@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neighborhood Navigator</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <nav>
+        <h2>Neighborhood Navigator</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="explore.html">Explore</a></li>
+            <li><a href="wish-i-knew.html">What I Wish I Knew</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+    </nav>
+
+     <main>
+        <section id="community-tips">
+            <h2>Things I wish I Knew Before Moving</h2>
+
+            <form id="tipForm">
+                <label for="userTip">Share your Experience:</label><br>
+                <textarea
+                    id="userTip"
+                    rows="4"
+                    placeholder="Example: Traffic on 91 starts building around 3:00 PM..."
+                    ></textarea><br><br>
+
+                    <label for="tipCategory">Category</label>
+                    <select id="tipCategory">
+                        <option value="general">General</option>
+                        <option value="traffic">Traffic</option>
+                        <option value="schools">Schools</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="community">Community</option>
+                    </select><br><br>
+
+                  <button type="submit">Submit Your Tip</button>
+            </form>
+
+            <p id="submitMessage" style="color: black; display: none;">Tip submitted successfully!</p>
+
+            <ul id="tipsList"></ul>
+        </section>
+    </main>
+
+
+    <script src="index.js"></script>
+
+    <footer>
+        <p>Neighborhood Navigator 2026</p>
+    </footer>
+    
+</body>
+</html>
