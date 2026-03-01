@@ -19,16 +19,55 @@
         </ul>
     </nav>
 
-    <header class="hero">
-        <h1>User Profile</h1>
-        <p>Log in (TBD).</p>
+    <main class="profile-container">
 
-    
-    </header>
+        <section class="profile-header">
+            <h1>Welcome!</h1>
+            <p>Your personalized moving dashboard.</p>
+
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <h3 id="savedCount">0</h3>
+                    <p>Saved Locations</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3 id="tipsCount">0</h3>
+                    <p>My Submitted Community Tips</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-actions">
+            <h2>Quick Actions</h2>
+
+            <button onclick="window.location.href='index.html'">
+                Search New Location
+            </button>
+
+             <button onclick="window.location.href='wish-i-knew.html'">
+                Share a Tip
+            </button>
+
+             <button id="clearAllBtn">
+                Clear Saved Locations
+             </button>
+               
+        </section>
+
+        <section class="saved-section">
+            <h2>Your Saved Locations</h2>
+            <div id="savedLocations"></div>
+        </section>
+
+
+    </main>
 
     <footer>
         <p>Neighborhood Navigator 2026</p>
     </footer>
+
+    <script src="index.js"></script>
     
 </body>
 </html>
