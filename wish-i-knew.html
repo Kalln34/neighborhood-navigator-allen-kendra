@@ -20,8 +20,35 @@
         </ul>
     </nav>
 
-    <h1>Things I Wish I knew</h1>
-    <div id="results"></div>
+     <main>
+        <section id="community-tips">
+            <h2>Things I wish I Knew Before Moving</h2>
+
+            <form id="tipForm">
+                <label for="userTip">Share your Experience:</label><br>
+                <textarea
+                    id="userTip"
+                    rows="4"
+                    placeholder="Example: Traffic on 91 starts building around 3:00 PM..."
+                    ></textarea><br><br>
+
+                    <label for="tipCategory">Category</label>
+                    <select id="tipCategory">
+                        <option value="general">General</option>
+                        <option value="traffic">Traffic</option>
+                        <option value="schools">Schools</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="community">Community</option>
+                    </select><br><br>
+
+                  <button type="submit">Submit Your Tip</button>
+            </form>
+
+            <p id="submitMessage" style="color: black; display: none;">Tip submitted successfully!</p>
+
+            <ul id="tipsList"></ul>
+        </section>
+    </main>
 
 
     <script src="index.js"></script>
