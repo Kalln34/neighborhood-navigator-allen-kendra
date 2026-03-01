@@ -1,11 +1,20 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
+
+    initLandingPage();
+    initExplorePage();
+    initWishIKnewPage();
+    initProfilePage();
+
+});
 
 // Landing Page function
 
-  const searchBtn = document.getElementById("searchBtn");
-    if (searchBtn) {
-        searchBtn.addEventListener("click", async function() {
-            const city = document.getElementById("cityInput").value.trim();
+function initLandingPage() {
+    const searchBtn = document.getElementById("searchBtn");
+    if (!searchBtn) return;
+
+    searchBtn.addEventListener("click", async () => {
+        const city = document.getElementById("cityInput").value.trim();
             if (!city) {
                 alert("Please enter a city or town.");
                 return;
@@ -40,51 +49,111 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 //Explore page function
+function initExplorePage() {
+    if (!window.location.pathname.includes("explore.html")) return;
 
-if (window.location.pathname.includes("explore.html")) {
+    (async function () {
         const params = new URLSearchParams(window.location.search);
         const city = params.get("city");
         const lat = params.get("lat");
         const lon = params.get("lon");
         const resultsDiv = document.getElementById("results");
+    
+        if (!resultsDiv) return;
 
-        if (resultsDiv) {
-            if (city && lat && lon) {
-                const cityLower = city.toLowerCase();
-                if (cityLower === "hartford") {
-                    resultsDiv.innerHTML = `
-                        <h2>Welcome to Hartford, Connecticut</h2>
-                        <p><strong>Population:</strong> 120,060</p>
-                        <p><strong>Famous Landmarks:</strong> Bushnell Park, Mark Twain House</p>
-                        <p><strong>Fun Fact:</strong> Hartford is known as the "Insurance Capital of the World".</p>
-                        <hr>
-                        <p>For more information, check out the <a href="https://www.hartford.gov/">official Hartford website</a>.</p>
-                    `;
-                } else if (cityLower === "new york city") {
-                    resultsDiv.innerHTML = `
-                        <h2>Welcome to New York City</h2>
-                        <p><strong>Population:</strong> 8.3 million (2020)</p>
-                        <p><strong>Famous Landmarks:</strong> Statue of Liberty, Times Square, Central Park</p>
-                        <p><strong>Fun Fact:</strong> New York City is made up of five boroughs: Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.</p>
-                        <hr>
-                        <p>For more information, visit the <a href="https://www.nyc.gov/">official NYC website</a>.</p>
-                    `;
-                } else {
-                    resultsDiv.innerHTML = `
-                        <p>Information for this city is coming soon. Please check back later.</p>
-                    `;
-                }
-            } else {
-                resultsDiv.innerHTML = `
-                    <h2>Explore Predefined Cities</h2>
-                    <p><a href="explore.html?city=Hartford&lat=41.7637&lon=-72.6851">Hartford, Connecticut</a></p>
-                    <p><a href="explore.html?city=New York City&lat=40.7128&lon=-74.0060">New York City</a></p>
-                    <p>Click on a city name above to explore more details.</p>
-                `;
-            }
+        if (!city) {
+            renderFeaturedCities(resultsDiv);
+            return;
         }
-    }
 
+        const cityLower = city.toLowerCase();
+
+        const featuredCities = {
+            "hartford": `
+                <h2>Welcome to Hartford, Connecticut</h2>
+                <p><strong>Population:</strong> 120,060</p>
+                <p><strong>Famous Landmarks:</strong> Bushnell Park, Mark Twain House</p>
+                <p><strong>Known For:</strong> Insurance Capital of the World</p>
+                <button id="saveLocationBtn">Save This Location</button>
+            `,
+            "new york city": `
+                <h2>Welcome to New York City</h2>
+                <p><strong>Population:</strong> 8.3 million (2020)</p>
+                <p><strong>Famous Landmarks:</strong> Statue of Liberty, Times Square, Central Park</p>
+                <button id="saveLocationBtn">Save This Location</button>
+            `,
+            "los angeles": `
+                <h2>Welcome to Los Angeles, California</h2>
+                <p><strong>Population:</strong> 3.9 million (2020)</p>
+                <p><strong>Known For:</strong> Hollywood, Beaches, Entertainment Industry</p>
+                <button id="saveLocationBtn">Save This Location</button>
+            `
+        };
+
+        if (featuredCities[cityLower]) {
+            resultsDiv.innerHTML = featuredCities[cityLower];
+        } else {
+            await fetchWikipediaSummary(city, lat, lon, resultsDiv);
+        }
+
+        initSaveLocation(city, lat, lon);
+    })(); // End of async IIFE
+}
+
+    async function fetchWikipediaSummary(city, lat, lon, container) {
+    try {
+        const response = await fetch(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`
+        );
+        const data = await response.json();
+
+        container.innerHTML = `
+            <h2>Welcome to ${city}</h2>
+            <p>${data.extract || "Information coming soon."}</p>
+            <p><strong>Coordinates:</strong> ${lat}, ${lon}</p>
+            <button id="saveLocationBtn">Save This Location</button>
+        `;
+    } catch {
+        container.innerHTML = "<p>Unable to load city information.</p>";
+    }
+}
+
+// default featured cities if user visits explore.html with no search query
+function renderFeaturedCities(container) {
+    container.innerHTML = `
+        <h2>Explore Featured Cities</h2>
+        <p><a href="explore.html?city=Hartford&lat=41.7637&lon=-72.6851">Hartford</a></p>
+        <p><a href="explore.html?city=New York City&lat=40.7128&lon=-74.0060">New York City</a></p>
+        <p><a href="explore.html?city=Los Angeles&lat=34.0522&lon=-118.2437">Los Angeles</a></p>
+        <p>Click on a city name above to explore more details.</p>
+    `;
+}
+
+// Save location function
+function initSaveLocation(city, lat, lon) {
+    const btn = document.getElementById("saveLocationBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+        const saved = JSON.parse(localStorage.getItem("savedLocations") || "[]");
+
+        if (saved.some(loc => loc.city.toLowerCase() === city.toLowerCase())) {
+            alert("Location already saved.");
+            return;
+        }
+
+        saved.push({
+            city,
+            lat,
+            lon,
+            note: "",
+            savedAt: new Date().toLocaleDateString()
+        });
+
+        localStorage.setItem("savedLocations", JSON.stringify(saved));
+        alert("Location saved!");
+    });
+}
 
 // Wish I Knew Page
 
@@ -164,4 +233,36 @@ if (window.location.pathname.includes("explore.html")) {
 
 })();
 
-});
+// profile page
+function initProfilePage() {
+    if (!window.location.pathname.includes("profile.html")) return;
+
+    const savedLocationsList = document.getElementById("savedLocationsList");
+    const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
+
+    if (!savedLocationsList) return;
+
+    savedLocationsList.innerHTML = "";
+
+    savedLocations.forEach((loc, index) => {
+        const li = document.createElement("li");
+        li.className = "location-card";
+
+        li.innerHTML = `
+            <strong>${loc.city}</strong> (${loc.lat}, ${loc.lon})<br>
+            <p>Note: ${loc.note || "None"}</p>
+            <p>Saved on: ${loc.savedAt}</p>
+            <button class="delete-btn" data-index="${index}">Delete</button>
+        `;
+        savedLocationsList.appendChild(li);
+    });
+
+    savedLocationsList.addEventListener("click", (event) => {
+        if (event.target.classList.contains("delete-btn")) {
+            const index = event.target.dataset.index;
+            savedLocations.splice(index, 1);
+            localStorage.setItem("savedLocations", JSON.stringify(savedLocations));
+            initProfilePage(); // Re-render list
+        }
+    });
+}
