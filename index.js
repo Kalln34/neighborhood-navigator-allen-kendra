@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initExplorePage();
     initWishIKnewPage();
     initProfilePage();
+    initCityPage();
 
 });
 
@@ -67,28 +68,7 @@ function initExplorePage() {
         }
 
         const cityLower = city.toLowerCase();
-
-        const featuredCities = {
-            "hartford": `
-                <h2>Welcome to Hartford, Connecticut</h2>
-                <p><strong>Population:</strong> 120,060</p>
-                <p><strong>Famous Landmarks:</strong> Bushnell Park, Mark Twain House</p>
-                <p><strong>Known For:</strong> Insurance Capital of the World</p>
-                <button id="saveLocationBtn">Save This Location</button>
-            `,
-            "new york city": `
-                <h2>Welcome to New York City</h2>
-                <p><strong>Population:</strong> 8.3 million (2020)</p>
-                <p><strong>Famous Landmarks:</strong> Statue of Liberty, Times Square, Central Park</p>
-                <button id="saveLocationBtn">Save This Location</button>
-            `,
-            "los angeles": `
-                <h2>Welcome to Los Angeles, California</h2>
-                <p><strong>Population:</strong> 3.9 million (2020)</p>
-                <p><strong>Known For:</strong> Hollywood, Beaches, Entertainment Industry</p>
-                <button id="saveLocationBtn">Save This Location</button>
-            `
-        };
+        const featuredCities = getFeaturedCities();
 
         if (featuredCities[cityLower]) {
             resultsDiv.innerHTML = featuredCities[cityLower];
@@ -97,8 +77,32 @@ function initExplorePage() {
         }
 
         initSaveLocation(city, lat, lon);
-    })(); // End of async IIFE
+    })();
 }
+
+       function getFeaturedCities() {
+            return {
+                "hartford": `
+                    <h2>Welcome to Hartford, Connecticut</h2>
+                    <p><strong>Population:</strong> 120,060</p>
+                    <p><strong>Famous Landmarks:</strong> Bushnell Park, Mark Twain House</p>
+                    <p><strong>Known For:</strong> Insurance Capital of the World</p>
+                    <button id="saveLocationBtn">Save This Location</button>
+                `,
+                "new york city": `
+                    <h2>Welcome to New York City</h2>
+                    <p><strong>Population:</strong> 8.3 million (2020)</p>
+                    <p><strong>Famous Landmarks:</strong> Statue of Liberty, Times Square, Central Park</p>
+                    <button id="saveLocationBtn">Save This Location</button>
+                `,
+                "los angeles": `
+                    <h2>Welcome to Los Angeles, California</h2>
+                    <p><strong>Population:</strong> 3.9 million (2020)</p>
+                    <p><strong>Known For:</strong> Hollywood, Beaches, Entertainment Industry</p>
+                    <button id="saveLocationBtn">Save This Location</button>
+                `
+            };
+        }
 
     async function fetchWikipediaSummary(city, lat, lon, container) {
     try {
@@ -120,11 +124,19 @@ function initExplorePage() {
 
 // default featured cities if user visits explore.html with no search query
 function renderFeaturedCities(container) {
+    const cities = getFeaturedCities();
     container.innerHTML = `
         <h2>Explore Featured Cities</h2>
-        <p><a href="explore.html?city=Hartford&lat=41.7637&lon=-72.6851">Hartford</a></p>
-        <p><a href="explore.html?city=New York City&lat=40.7128&lon=-74.0060">New York City</a></p>
-        <p><a href="explore.html?city=Los Angeles&lat=34.0522&lon=-118.2437">Los Angeles</a></p>
+        ${Object.keys(cities)
+            .map(city => {
+                const latLon = {
+                    "hartford": "41.7637,-72.6851",
+                    "new york city": "40.7128,-74.0060",
+                    "los angeles": "34.0522,-118.2437"
+                };
+                return `<p><a href="explore.html?city=${encodeURIComponent(city)}&lat=${latLon[city].split(',')[0]}&lon=${latLon[city].split(',')[1]}">${capitalize(city)}</a></p>`;
+            })
+            .join("")}
         <p>Click on a city name above to explore more details.</p>
     `;
 }
@@ -190,7 +202,7 @@ function initSaveLocation(city, lat, lon) {
         // render tips
         renderTips();
 
-        //form submission
+    //form submission
     tipForm.addEventListener("submit", function(event) {
         event.preventDefault();
         const tipText = userTipInput.value.trim();
@@ -233,6 +245,8 @@ function initSaveLocation(city, lat, lon) {
 
 })();
 
+
+
 // profile page
 function initProfilePage() {
     if (!window.location.pathname.includes("profile.html")) return;
@@ -265,4 +279,84 @@ function initProfilePage() {
             initProfilePage(); // Re-render list
         }
     });
+}
+
+//city page 
+
+function initCityPage() {
+    if (!window.location.pathname.includes("city.html")) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const city = params.get("city");
+
+    const cityInfoDiv = document.getElementById("cityInfo");
+    const breadcrumb = document.getElementById("breadcrumb");
+    if (!cityInfoDiv) return;
+
+    if (breadcrumb) {
+        breadcrumb.innerHTML = `
+            <a href="index.html">Home</a> &gt;
+            <a href="explore.html">Explore</a> &gt;
+            ${city}
+        `;
+    }
+
+    if (!city) {
+        cityInfoDiv.innerHTML = "<p>No city selected.</p>";
+        return;
+    }
+
+    const cityLower = city.toLowerCase();
+
+    const cityData = {
+        "hartford": {
+            schools: ["Hartford Public High School", "University of Hartford"],
+            healthcare: ["Hartford Hospital", "Saint Francis Hospital"],
+            transportation: ["CT Transit Bus System", "Union Station"],
+            lifestyle: ["Bushnell Park", "Mark Twain House"]
+        },
+        "new york city": {
+            schools: ["Columbia University", "NYU"],
+            healthcare: ["Mount Sinai Hospital", "NY Presbyterian Hospital"],
+            transportation: ["NYC Subway", "MTA Bus System"],
+            lifestyle: ["Central Park", "Broadway"]
+        },
+        "los angeles": {
+            schools: ["UCLA", "USC"],
+            healthcare: ["Cedars-Sinai", "UCLA Medical Center"],
+            transportation: ["Metro Rail", "LAX Airport"],
+            lifestyle: ["Hollywood", "Santa Monica Pier"]
+        }
+    };
+
+    if (!cityData[cityLower]) {
+        cityInfoDiv.innerHTML = `<h2>${city}</h2><p>Information coming soon.</p>`;
+        return;
+    }
+
+    let html = `<h2>${city}</h2>`;
+    Object.keys(cityData[cityLower]).forEach(category => {
+        const formattedCategory = capitalize(category);
+        html += `
+            <div class="category-section">
+                <button class="toggle-btn">${formattedCategory}</button>
+                <div class="category-content" style="display:none;">
+                    <ul>${cityData[cityLower][category].map(item => `<li>${item}</li>`).join("")}</ul>
+                </div>
+            </div>
+        `;
+    });
+
+    cityInfoDiv.innerHTML = html;
+
+    document.querySelectorAll(".toggle-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const content = btn.nextElementSibling;
+            content.style.display = content.style.display === "none" ? "block" : "none";
+        });
+    });
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
