@@ -21,6 +21,8 @@ const cityData = {
     }
 };
 
+
+//helper functions
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -179,22 +181,18 @@ function initSaveLocation(city, lat, lon) {
 
         localStorage.setItem("savedLocations", JSON.stringify(saved));
         alert("Location saved!");
+
+          if (window.opener && window.opener.renderSavedLocations) {
+            window.opener.renderSavedLocations();
+        }
+
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'savedLocations',
+            newValue: JSON.stringify(saved)
+        }));
     });
 }
 
-function initToggleButtons() {
-    document.querySelectorAll(".toggle-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const content = btn.nextElementSibling;
-            content.style.display = content.style.display === "none" ? "block" : "none";
-        });
-    });
-}
-
-// Helper: capitalize first letter
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
 
 // Render city categories (schools, healthcare, lifestyle, etc.)
 function renderCityCategories(cityLower) {
@@ -298,49 +296,63 @@ function initProfilePage() {
     if (!window.location.pathname.includes("profile.html")) return;
 
     const savedLocationsList = document.getElementById("savedLocationsList");
-    const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
-    const communityTips = JSON.parse(localStorage.getItem("communityTips") || "[]");
+    const savedCountEl = document.getElementById("savedCount");
+    const tipsCountEl = document.getElementById("tipsCount");
+    const clearBtn = document.getElementById("clearAllBtn");
+    if (!savedLocationsList || !savedCountEl || !tipsCountEl) return;
 
-// Update counters
-    document.getElementById("savedCount").textContent = savedLocations.length;
-    document.getElementById("tipsCount").textContent = communityTips.length;
+    window.renderSavedLocations = function() {
+        const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
+        savedLocationsList.innerHTML = "";
+        savedLocations.forEach((loc, index) => {
+            const li = document.createElement("li");
+            li.className = "location-card";
+            li.innerHTML = `
+                <strong>${loc.city}</strong> (${loc.lat}, ${loc.lon})<br>
+                <p>Note: ${loc.note || "None"}</p>
+                <p>Saved on: ${loc.savedAt}</p>
+                <button class="delete-btn" data-index="${index}">Delete</button>
+            `;
+            savedLocationsList.appendChild(li);
+        });
+        savedCountEl.textContent = savedLocations.length;
+    }
 
-    if (!savedLocationsList) return;
+    function updateTipsCount() {
+        const communityTips = JSON.parse(localStorage.getItem("communityTips") || "[]");
+        tipsCountEl.textContent = communityTips.length;
+    }
 
-    savedLocationsList.innerHTML = "";
-
-    savedLocations.forEach((loc, index) => {
-        const li = document.createElement("li");
-        li.className = "location-card";
-
-        li.innerHTML = `
-            <strong>${loc.city}</strong> (${loc.lat}, ${loc.lon})<br>
-            <p>Note: ${loc.note || "None"}</p>
-            <p>Saved on: ${loc.savedAt}</p>
-            <button class="delete-btn" data-index="${index}">Delete</button>
-        `;
-        savedLocationsList.appendChild(li);
-    });
+    renderSavedLocations();
+    updateTipsCount();
 
     savedLocationsList.addEventListener("click", (event) => {
         if (event.target.classList.contains("delete-btn")) {
-            const index = event.target.dataset.index;
+            const index = parseInt(event.target.dataset.index, 10);
+            const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
             savedLocations.splice(index, 1);
             localStorage.setItem("savedLocations", JSON.stringify(savedLocations));
-            initProfilePage(); // Re-render list
+            window.renderSavedLocations();
+
         }
     });
+   
 
-    // Clear all saved locations
-    const clearBtn = document.getElementById("clearAllBtn");
+    //clear location list
     if (clearBtn) {
         clearBtn.addEventListener("click", () => {
             if (confirm("Are you sure you want to clear all saved locations?")) {
                 localStorage.removeItem("savedLocations");
-                initProfilePage(); // Re-render
+                renderSavedLocations();
             }
         });
     }
+
+// Cross-tab / external updates
+  window.addEventListener("storage", (event) => {
+        if (event.key === "savedLocations") window.renderSavedLocations();
+        if (event.key === "communityTips") updateTipsCount();
+    });
 }
 
 //city page 
