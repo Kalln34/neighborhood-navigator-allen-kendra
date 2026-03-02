@@ -181,6 +181,11 @@ function initSaveLocation(city, lat, lon) {
 
         localStorage.setItem("savedLocations", JSON.stringify(saved));
         alert("Location saved!");
+
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'savedLocations',
+            newValue: JSON.stringify(saved)
+        }));
     });
 }
 
@@ -324,8 +329,14 @@ function initProfilePage() {
             savedLocations.splice(index, 1);
             localStorage.setItem("savedLocations", JSON.stringify(savedLocations));
             renderSavedLocations();
+
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'savedLocations',
+                newValue: JSON.stringify(savedLocations)
+            }));
         }
     });
+   
 
     //clear location list
     if (clearBtn) {
@@ -337,12 +348,10 @@ function initProfilePage() {
         });
     }
 
-    // Cross-tab / external updates
-    window.addEventListener("storage", (event) => {
-        if (event.key === "savedLocations" || event.key === "communityTips") {
-            renderSavedLocations();
-            updateTipsCount();
-        }
+// Cross-tab / external updates
+  window.addEventListener("storage", (event) => {
+        if (event.key === "savedLocations") renderSavedLocations();
+        if (event.key === "communityTips") updateTipsCount();
     });
 }
 
