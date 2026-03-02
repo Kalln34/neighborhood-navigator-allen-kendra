@@ -182,6 +182,10 @@ function initSaveLocation(city, lat, lon) {
         localStorage.setItem("savedLocations", JSON.stringify(saved));
         alert("Location saved!");
 
+          if (window.opener && window.opener.renderSavedLocations) {
+            window.opener.renderSavedLocations();
+        }
+
         window.dispatchEvent(new StorageEvent('storage', {
             key: 'savedLocations',
             newValue: JSON.stringify(saved)
@@ -297,7 +301,7 @@ function initProfilePage() {
     const clearBtn = document.getElementById("clearAllBtn");
     if (!savedLocationsList || !savedCountEl || !tipsCountEl) return;
 
-    function renderSavedLocations() {
+    window.renderSavedLocations = function() {
         const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
         savedLocationsList.innerHTML = "";
         savedLocations.forEach((loc, index) => {
@@ -328,12 +332,8 @@ function initProfilePage() {
             const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
             savedLocations.splice(index, 1);
             localStorage.setItem("savedLocations", JSON.stringify(savedLocations));
-            renderSavedLocations();
+            window.renderSavedLocations();
 
-            window.dispatchEvent(new StorageEvent('storage', {
-                key: 'savedLocations',
-                newValue: JSON.stringify(savedLocations)
-            }));
         }
     });
    
@@ -350,7 +350,7 @@ function initProfilePage() {
 
 // Cross-tab / external updates
   window.addEventListener("storage", (event) => {
-        if (event.key === "savedLocations") renderSavedLocations();
+        if (event.key === "savedLocations") window.renderSavedLocations();
         if (event.key === "communityTips") updateTipsCount();
     });
 }
