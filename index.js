@@ -25,20 +25,6 @@ function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function renderCityCategories(cityLower) {
-    let html = `<h2>${capitalize(cityLower)}</h2>`;
-    Object.keys(cityData[cityLower]).forEach(category => {
-        html += `
-            <div class="category-section">
-                <button class="toggle-btn">${capitalize(category)}</button>
-                <div class="category-content" style="display:none;">
-                    <ul>${cityData[cityLower][category].map(item => `<li>${item}</li>`).join("")}</ul>
-                </div>
-            </div>
-        `;
-    });
-    return html;
-}
 
 function initToggleButtons() {
     document.querySelectorAll(".toggle-btn").forEach(btn => {
@@ -121,17 +107,20 @@ function initExplorePage() {
         }
 
         const cityLower = city.toLowerCase();
-        if (cityData[cityLower]) {
-            resultsDiv.innerHTML = renderCityCategories(cityLower);
+         if (cityData[cityLower]) {
+            // Featured city from your cityData object
+            resultsDiv.innerHTML = renderCityCategories(cityLower) + 
+                                   `<button id="saveLocationBtn">Save This Location</button>`;
+            initSaveLocation(city, lat, lon);
+            initToggleButtons();
         } else {
+            // City not in featured list, fetch Wikipedia info
             await fetchWikipediaSummary(city, lat, lon, resultsDiv);
         }
-
-        initSaveLocation(city, lat, lon);
-        initToggleButtons();
     })();
 }
 
+//city list with no search 
 function renderFeaturedCities(container) {
     container.innerHTML = `<h2>Explore Featured Cities</h2>` +
         Object.keys(cityData).map(city => {
@@ -146,7 +135,7 @@ function renderFeaturedCities(container) {
         `<p>Click on a city name above to explore more details.</p>`;
 }
 
-
+// wiki search info for non-featured cities
     async function fetchWikipediaSummary(city, lat, lon, container) {
     try {
         const response = await fetch(
@@ -160,26 +149,10 @@ function renderFeaturedCities(container) {
             <p><strong>Coordinates:</strong> ${lat}, ${lon}</p>
             <button id="saveLocationBtn">Save This Location</button>
         `;
-    } catch {
+ initSaveLocation(city, lat, lon);
+    } catch (err) {
         container.innerHTML = "<p>Unable to load city information.</p>";
-    }
-}
-
-async function fetchWikipediaSummary(city, lat, lon, container) {
-    try {
-        const response = await fetch(
-            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`
-        );
-        const data = await response.json();
-        container.innerHTML = `
-            <h2>Welcome to ${city}</h2>
-            <p>${data.extract || "Information coming soon."}</p>
-            <p><strong>Coordinates:</strong> ${lat}, ${lon}</p>
-            <button id="saveLocationBtn">Save This Location</button>
-        `;
-        initToggleButtons();
-    } catch {
-        container.innerHTML = "<p>Unable to load city information.</p>";
+        console.error(err);
     }
 }
 
@@ -209,8 +182,35 @@ function initSaveLocation(city, lat, lon) {
     });
 }
 
+function initToggleButtons() {
+    document.querySelectorAll(".toggle-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const content = btn.nextElementSibling;
+            content.style.display = content.style.display === "none" ? "block" : "none";
+        });
+    });
+}
+
+// Helper: capitalize first letter
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Render city categories (schools, healthcare, lifestyle, etc.)
+function renderCityCategories(cityLower) {
+    if (!cityData[cityLower]) return "";
+    let html = `<h2>${capitalize(cityLower)}</h2>`;
+    Object.keys(cityData[cityLower]).forEach(category => {
+        html += `
+            <div class="category-section">
+                <button class="toggle-btn">${capitalize(category)}</button>
+                <div class="category-content" style="display:none;">
+                    <ul>${cityData[cityLower][category].map(item => `<li>${item}</li>`).join("")}</ul>
+                </div>
+            </div>
+        `;
+    });
+    return html;
 }
 
 // Wish I Knew Page
