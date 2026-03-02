@@ -239,6 +239,11 @@ function initProfilePage() {
 
     const savedLocationsList = document.getElementById("savedLocationsList");
     const savedLocations = JSON.parse(localStorage.getItem("savedLocations") || "[]");
+    const communityTips = JSON.parse(localStorage.getItem("communityTips") || "[]");
+
+// Update counters
+    document.getElementById("savedCount").textContent = savedLocations.length;
+    document.getElementById("tipsCount").textContent = communityTips.length;
 
     if (!savedLocationsList) return;
 
@@ -265,4 +270,15 @@ function initProfilePage() {
             initProfilePage(); // Re-render list
         }
     });
+
+    // Clear all saved locations
+    const clearBtn = document.getElementById("clearAllBtn");
+    if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            if (confirm("Are you sure you want to clear all saved locations?")) {
+                localStorage.removeItem("savedLocations");
+                initProfilePage(); // Re-render
+            }
+        });
+    }
 }
