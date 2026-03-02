@@ -167,6 +167,10 @@ function initSaveLocation(city, lat, lon) {
     });
 }
 
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 // Wish I Knew Page
 
 (function() {    
